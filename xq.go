@@ -132,19 +132,15 @@ func (x *XSQL) Str() string {
 
 		x.buf.WriteString(` from ` + x.t)
 
-		for _, j := range x.joinTs { // join
-			x.buf.WriteString(` join ` + j.t)
-			for i, r := range j.rules {
-				if i == 0 {
-					x.buf.WriteString(` on`)
-				} else if i > 0 {
-					x.buf.WriteString(` and`)
-				}
-				x.buf.WriteString(` ` + r)
-			}
+		if len(x.joinTs) > 0 {
+			x.buf.WriteString(` ` + appendJoin(x.joinTs))
 		}
 	case modeUpdate:
 		x.buf.WriteString(`update ` + x.t)
+
+		if len(x.joinTs) > 0 {
+			x.buf.WriteString(` ` + appendJoin(x.joinTs))
+		}
 
 		for i, set := range x.sets {
 			if i == 0 {
@@ -178,3 +174,22 @@ func (x *XSQL) Str() string {
 }
 
 func (x *XSQL) Args() []interface{} { return x.args }
+
+func appendJoin(ts []JoinT) string {
+	var b bytes.Buffer
+	for i, j := range ts {
+		if i > 0 {
+			b.WriteString(` `)
+		}
+		b.WriteString(`join ` + j.t)
+		for i, r := range j.rules {
+			if i == 0 {
+				b.WriteString(` on`)
+			} else if i > 0 {
+				b.WriteString(` and`)
+			}
+			b.WriteString(` ` + r)
+		}
+	}
+	return b.String()
+}
