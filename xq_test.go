@@ -26,3 +26,9 @@ func TestJoin(t *testing.T) {
 		Order("m.update_dt").Limit(0, 10)
 	t.Log(x.Str())
 }
+
+func TestWhereOr(t *testing.T) {
+	x := New().Sel(`shop`).Cols(`id`, `name`).WhereOr(`last_raw_dt is null`, `last_raw_dt < last_search_dt`).
+		Where(`last_search_dt is not null`).Order(`last_search_dt asc`).Limit(0, 1)
+	t.Log(x.Str())
+}

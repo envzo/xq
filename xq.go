@@ -97,6 +97,24 @@ func (x *XSQL) Where(f string, arg ...interface{}) *XSQL {
 	return x
 }
 
+func (x *XSQL) WhereOr(f ...string) *XSQL {
+	var b bytes.Buffer
+	for i, f := range f {
+		if i > 0 {
+			b.WriteString(` or `)
+		}
+		b.WriteString(f)
+	}
+
+	if len(x.fields) > 0 {
+		x.filters = append(x.filters, `( `+b.String()+` )`)
+	} else {
+		x.filters = append(x.filters, b.String())
+	}
+
+	return x
+}
+
 func (x *XSQL) IfWhere(ok bool, f string, arg ...interface{}) *XSQL {
 	if !ok {
 		return x
