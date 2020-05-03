@@ -134,13 +134,18 @@ func (p *parser) parseIndexes(fields []*Field, in interface{}) ([]Index, error) 
 func (p *parser) parseField(in interface{}) (*Field, error) {
 	m := in.(yaml.MapSlice)
 
+	name := m[0].Key.(string)
+	if m[0].Value == nil {
+		return nil, fmt.Errorf("field '%s' should have type", name)
+	}
+
 	t, err := p.parseDatatype(m[0].Value.(string))
 	if err != nil {
 		return nil, err
 	}
 
 	f := Field{
-		Name: m[0].Key.(string),
+		Name: name,
 		Type: t,
 	}
 
