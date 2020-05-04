@@ -153,48 +153,52 @@ func (p *parser) parseField(in interface{}) (*Field, error) {
 	for _, item := range m[1:] {
 		switch key := item.Key.(string); key {
 		case "default":
-			switch f.Type.T {
+			switch t.T {
 			case DataTypeVarchar, DataTypeInteger, DataTypeBigint, DataTypeBool,
 				DataTypeDouble, DataTypeText:
 				f.Default = item.Value
 			default:
-				return nil, fmt.Errorf("%s: data type '%s' can not have 'default' attribute", f.Name, f.Type.T)
+				return nil, fmt.Errorf("%s: data type '%s' can not have 'default' attribute", name, t.T)
 			}
 
 		case "size":
-			switch f.Type.T {
+			switch t.T {
 			case DataTypeVarchar:
 			default:
-				return nil, fmt.Errorf("%s: data type '%s' can not have 'size' attribute", f.Name, f.Type.T)
+				return nil, fmt.Errorf("%s: data type '%s' can not have 'size' attribute", name, t.T)
 			}
 			f.Size = item.Value.(int)
 		case "comment":
 			f.Comment = item.Value.(string)
 		case "nullable":
-			f.Nullable = item.Value.(bool)
+			nullable := item.Value.(bool)
+			if t.T == DataTypeJson && nullable {
+				return nil, fmt.Errorf("%s: data type '%s' shoule not be nullable", name, t.T)
+			}
+			f.Nullable = nullable
 		case "pk":
-			switch f.Type.T {
+			switch t.T {
 			case DataTypeInteger, DataTypeBigint:
 			default:
-				return nil, fmt.Errorf("%s: primary key must be integer, bigint", f.Name)
+				return nil, fmt.Errorf("%s: primary key must be integer, bigint", name)
 			}
 			f.PK = item.Value.(bool)
 		default:
-			return nil, fmt.Errorf("%s: invalid attribute: %s", f.Name, key)
+			return nil, fmt.Errorf("%s: invalid attribute: %s", name, key)
 		}
 	}
 
 	// some validation
-	switch f.Type.T {
+	switch t.T {
 	case DataTypeVarchar:
 		if f.Size == 0 {
-			return nil, fmt.Errorf("%s should have size. if size is not a consideration, 'text' should be used", f.Name)
+			return nil, fmt.Errorf("%s should have size. if size is not a consideration, 'text' should be used", name)
 		}
 	}
 
 	if f.PK {
 		if f.Nullable {
-			return nil, fmt.Errorf("%s: primary key can not be nullable", f.Name)
+			return nil, fmt.Errorf("%s: primary key can not be nullable", name)
 		}
 	}
 
@@ -336,7 +340,7 @@ func (g *gen) render(p *parser, w io.Writer) error {
 				}
 			}
 
-			if !f.Nullable && !f.PK {
+			if !f.Nullable && !f.PK && f.Type.T != DataTypeJson {
 				g.P(" not null")
 			}
 
