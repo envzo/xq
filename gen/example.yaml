@@ -12,6 +12,7 @@ action_log:
       comment: 操作结果状态说明
     - poi: text
       comment: 搜索到的门店的基本信息
+    - somedata: json
     - is_used: bool
       comment: 是否已使用
     - create_dt: datetime

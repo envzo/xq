@@ -21,6 +21,7 @@ const (
 	DataTypeDatetime = "datetime"
 	DataTypeDouble   = "double"
 	DataTypeText     = "text"
+	DataTypeJson     = "json"
 )
 
 var model = flag.String("model", "", "model file (YAML)")
@@ -216,6 +217,8 @@ func (p *parser) parseDatatype(t string) (*Type, error) {
 		return &Type{T: DataTypeDouble}, nil
 	case "text":
 		return &Type{T: DataTypeText}, nil
+	case "json":
+		return &Type{T: DataTypeJson}, nil
 	default:
 		return nil, fmt.Errorf("invalid data type: %s", t)
 	}
