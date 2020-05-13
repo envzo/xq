@@ -95,7 +95,7 @@ func (p *parser) parseTable(s yaml.MapItem) (*Table, error) {
 			if err != nil {
 				return nil, errors.New("indexes: " + err.Error())
 			}
-			t.Uniques = indexes
+			t.Indexes = indexes
 		}
 	}
 
