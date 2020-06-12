@@ -34,15 +34,15 @@ type JoinT struct {
 }
 
 type KV map[string]interface{}
-type Rule map[string]interface{} // value must be a given variable
+type R map[string]interface{} // value must be a given variable
 
-func (r Rule) MustCheck() {
+func (r R) MustCheck() {
 	if len(r) != 1 {
 		panic(errors.New("rule should only have one pair"))
 	}
 }
 
-func (r Rule) Unwrap() (string, interface{}) {
+func (r R) Unwrap() (string, interface{}) {
 	for k, v := range r {
 		return k, v
 	}
@@ -51,7 +51,7 @@ func (r Rule) Unwrap() (string, interface{}) {
 
 type IfRule struct {
 	Ignore bool
-	R      Rule
+	R      R
 }
 
 func New() *XSQL { return &XSQL{mode: modeNone, offset: -1, limit: -1} }
@@ -87,7 +87,7 @@ func (x *XSQL) Set(kv ...KV) *XSQL {
 	return x
 }
 
-func (x *XSQL) Join(t string, rule ...Rule) *XSQL {
+func (x *XSQL) Join(t string, rule ...R) *XSQL {
 	jt := JoinT{t: t}
 
 	for _, r := range rule {
