@@ -49,6 +49,11 @@ func (r Rule) Unwrap() (string, interface{}) {
 	panic("no data: rule should only have one pair")
 }
 
+type IfRule struct {
+	Ignore bool
+	R      Rule
+}
+
 func New() *XSQL { return &XSQL{mode: modeNone, offset: -1, limit: -1} }
 
 func (x *XSQL) Sel(tb string) *XSQL {
@@ -107,20 +112,28 @@ func (x *XSQL) Where(f string, arg ...interface{}) *XSQL {
 	return x
 }
 
-func (x *XSQL) WhereOr(rule ...Rule) *XSQL {
+func (x *XSQL) WhereOr(rule ...IfRule) *XSQL {
 	var b bytes.Buffer
-	for i, r := range rule {
-		r.MustCheck()
+	for _, r := range rule {
+		r.R.MustCheck()
 
-		if i > 0 {
+		if r.Ignore {
+			continue
+		}
+
+		if b.Len() > 0 {
 			b.WriteString(` or `)
 		}
 
-		k, v := r.Unwrap()
+		k, v := r.R.Unwrap()
 		b.WriteString(k)
 		if v != nil {
 			x.args = append(x.args, v)
 		}
+	}
+
+	if b.Len() == 0 {
+		return x
 	}
 
 	if len(x.fields) > 0 {

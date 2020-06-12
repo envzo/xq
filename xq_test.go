@@ -28,7 +28,7 @@ func TestJoin(t *testing.T) {
 }
 
 func TestWhereOr(t *testing.T) {
-	x := New().Sel(`shop`).Cols(`id`, `name`).WhereOr(Rule{`last_raw_dt is null`: nil}, Rule{`last_raw_dt < last_search_dt`: nil}).
+	x := New().Sel(`shop`).Cols(`id`, `name`).WhereOr(IfRule{Ignore: true, R: Rule{`last_raw_dt is null`: nil}}, IfRule{Ignore: false, R: Rule{`last_raw_dt < last_search_dt`: nil}}).
 		Where(`last_search_dt is not null`).Order(`last_search_dt asc`).Limit(0, 1)
 	t.Log(x.Str())
 }
