@@ -36,6 +36,19 @@ type JoinT struct {
 type KV map[string]interface{}
 type Rule map[string]interface{} // value must be a given variable
 
+func (r Rule) MustCheck() {
+	if len(r) != 1 {
+		panic(errors.New("rule should only have one pair"))
+	}
+}
+
+func (r Rule) Unwrap() (string, interface{}) {
+	for k, v := range r {
+		return k, v
+	}
+	panic("no data: rule should only have one pair")
+}
+
 func New() *XSQL { return &XSQL{mode: modeNone, offset: -1, limit: -1} }
 
 func (x *XSQL) Sel(tb string) *XSQL {
@@ -73,15 +86,12 @@ func (x *XSQL) Join(t string, rule ...Rule) *XSQL {
 	jt := JoinT{t: t}
 
 	for _, r := range rule {
-		if len(r) != 1 {
-			panic(errors.New("in Join each rule pair should only have one key"))
-		}
+		r.MustCheck()
 
-		for k, v := range r {
-			jt.rules = append(jt.rules, k)
-			if v != nil {
-				jt.args = append(jt.args, v)
-			}
+		k, v := r.Unwrap()
+		jt.rules = append(jt.rules, k)
+		if v != nil {
+			jt.args = append(jt.args, v)
 		}
 	}
 
@@ -97,13 +107,20 @@ func (x *XSQL) Where(f string, arg ...interface{}) *XSQL {
 	return x
 }
 
-func (x *XSQL) WhereOr(f ...string) *XSQL {
+func (x *XSQL) WhereOr(rule ...Rule) *XSQL {
 	var b bytes.Buffer
-	for i, f := range f {
+	for i, r := range rule {
+		r.MustCheck()
+
 		if i > 0 {
 			b.WriteString(` or `)
 		}
-		b.WriteString(f)
+
+		k, v := r.Unwrap()
+		b.WriteString(k)
+		if v != nil {
+			x.args = append(x.args, v)
+		}
 	}
 
 	if len(x.fields) > 0 {
