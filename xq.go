@@ -49,7 +49,7 @@ func (r R) Unwrap() (string, interface{}) {
 	panic("no data: rule should only have one pair")
 }
 
-type IfRule struct {
+type XR struct {
 	Ignore bool
 	R      R
 }
@@ -106,7 +106,7 @@ func (x *XSQL) Join(t string, rule ...R) *XSQL {
 	return x
 }
 
-func (x *XSQL) Where(rule IfRule) *XSQL {
+func (x *XSQL) Where(rule XR) *XSQL {
 	if rule.Ignore {
 		return x
 	}
@@ -119,7 +119,7 @@ func (x *XSQL) Where(rule IfRule) *XSQL {
 	return x
 }
 
-func (x *XSQL) WhereOr(rule ...IfRule) *XSQL {
+func (x *XSQL) WhereOr(rule ...XR) *XSQL {
 	var b bytes.Buffer
 	for _, r := range rule {
 		r.R.MustCheck()
