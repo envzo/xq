@@ -93,10 +93,10 @@ func (x *XSQL) Join(t string, rule ...R) *XSQL {
 	for _, r := range rule {
 		r.MustCheck()
 
-		k, v := r.Unwrap()
-		jt.rules = append(jt.rules, k)
-		if v != nil {
-			jt.args = append(jt.args, v)
+		exp, arg := r.Unwrap()
+		jt.rules = append(jt.rules, exp)
+		if arg != nil {
+			jt.args = append(jt.args, arg)
 		}
 	}
 
@@ -106,9 +106,16 @@ func (x *XSQL) Join(t string, rule ...R) *XSQL {
 	return x
 }
 
-func (x *XSQL) Where(f string, arg ...interface{}) *XSQL {
-	x.filters = append(x.filters, f)
-	x.args = append(x.args, arg...)
+func (x *XSQL) Where(rule IfRule) *XSQL {
+	if rule.Ignore {
+		return x
+	}
+
+	exp, arg := rule.R.Unwrap()
+	x.filters = append(x.filters, exp)
+	if arg != nil {
+		x.args = append(x.args, arg)
+	}
 	return x
 }
 
@@ -125,10 +132,10 @@ func (x *XSQL) WhereOr(rule ...IfRule) *XSQL {
 			b.WriteString(` or `)
 		}
 
-		k, v := r.R.Unwrap()
-		b.WriteString(k)
-		if v != nil {
-			x.args = append(x.args, v)
+		exp, arg := r.R.Unwrap()
+		b.WriteString(exp)
+		if arg != nil {
+			x.args = append(x.args, arg)
 		}
 	}
 
@@ -143,13 +150,6 @@ func (x *XSQL) WhereOr(rule ...IfRule) *XSQL {
 	}
 
 	return x
-}
-
-func (x *XSQL) IfWhere(ok bool, f string, arg ...interface{}) *XSQL {
-	if !ok {
-		return x
-	}
-	return x.Where(f, arg...)
 }
 
 func (x *XSQL) Order(f string) *XSQL {
