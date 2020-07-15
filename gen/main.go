@@ -318,10 +318,10 @@ func (g *gen) render(p *parser, w io.Writer) error {
 		}
 
 		// DDL
-		g.P("create table if not exists", t.Name, "(").Ln()
+		g.P("create table if not exists", "`"+t.Name+"`", "(").Ln()
 
 		for j, f := range t.Fields {
-			g.P(" ", f.Name, f.Type.T)
+			g.P(" ", "`"+f.Name+"`", f.Type.T)
 
 			// size
 			if f.Size > 0 {
