@@ -19,6 +19,7 @@ const (
 	DataTypeVarchar  = "varchar"
 	DataTypeBool     = "bool"
 	DataTypeDatetime = "datetime"
+	DataTypeDate     = "date"
 	DataTypeDouble   = "double"
 	DataTypeText     = "text"
 	DataTypeJson     = "json"
@@ -217,6 +218,8 @@ func (p *parser) parseDatatype(t string) (*Type, error) {
 		return &Type{T: DataTypeBool}, nil
 	case "datetime":
 		return &Type{T: DataTypeDatetime}, nil
+	case "date":
+		return &Type{T: DataTypeDate}, nil
 	case "double":
 		return &Type{T: DataTypeDouble}, nil
 	case "text":
